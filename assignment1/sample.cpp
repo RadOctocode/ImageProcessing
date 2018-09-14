@@ -1,5 +1,7 @@
+#include <opencv/cv.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
 #include <map>
 #include <math.h>
@@ -10,21 +12,14 @@ using namespace std;
 Mat neg(Mat image){
   for(int i=0; i<image.rows; i++){
   	for(int j=0; j<image.cols; j++){
-		Vec3b currentPixel=image.at<Vec3b>(i,j);
-		int newVal=((int)currentPixel[0]+(int)currentPixel[1]+(int)currentPixel[2])/3;
-		newVal=255-newVal;
-		Vec3b newPixel;
-		newPixel[0]=newVal;
-		newPixel[1]=newVal;	
-		newPixel[2]=newVal;
-		image.at<Vec3b>(i,j)=newPixel;	
+		image.at<uchar>(i,j)=255-image.at<uchar>(i,j);
 	}
   }
   return image;
 
 }
 
-vector<int> calculateHist(Mat image){
+vector<int> calculateHist(const Mat& image){
   vector<int> histogram (256,0);
   for(int i=0; i<image.rows; i++){
   	for(int j=0; j<image.cols; j++){
@@ -38,22 +33,34 @@ vector<int> calculateHist(Mat image){
   return histogram;
 }
 
-Mat graphHist(Mat image){
+Mat graphHist(const Mat& image){
+  
+ vector<int> hist=calculateHist(image);
  int histY=512;
  int histX=400;
- int bin_w = ceil((float)hist_w/256);
- Mat returnVal(histY,histX,CV_8UC3,Scalar(255,255,255));
+ int max=0;
+ int bin_w = ceil((float)histX/256);
+ Mat returnVal(histY,histX,CV_8UC3,Scalar(0,0,0));
+ for(int i=0;i<256;++i){
+	if(max<hist[i]){
+		max=hist[i];	
+	}
+ }
+
+ for(int i=0;i<256;++i){
+	hist[i]=((float)hist[i]/max)*image.rows;
+ }
  //normalise hist divide everyval by the max and times it by image rows
  //plot hist
  for(int i=0;i<256;++i){
 	
-	line(histogram_image, Point(bin_w*(x), hist_h), Point(bin_w*(x), hist_h - histogram[x]), Scalar(0,0,0), 1, 8, 0);
+	line(returnVal, Point(bin_w*(i), histX), Point(bin_w*(i), histX - hist[i]), Scalar(255,255,255), 4, 8, 0);
  }
 
  return returnVal;
 }
 
-Mat equalizeHist(Mat image){
+Mat equalizeHist(const Mat& image){
   vector<int> hist=calculateHist(image);
   int totalPixels=0;
   vector<float> pdf (256,0);
@@ -72,7 +79,7 @@ Mat equalizeHist(Mat image){
   
   cd[0]=hist[0];
   for(int i=1;i<256;++i){
-      cd[i]=hist[i]+cd[i-1];
+      cd[i]=(hist[i]+cd[i-1]);
   }
 
   for(int i = 0; i < 256; i++){
@@ -98,6 +105,46 @@ Mat equalizeHist(Mat image){
 
 }
 
+Mat thres(const Mat& image){
+
+   Mat returnimage=image.clone();
+   int threshold=0;
+   
+
+
+for(int i=0; i<image.rows; i++){
+  	for(int j=0; j<image.cols; j++){
+	   threshold +=(int)image.at<uchar>(i,j);
+	}
+}
+ 
+threshold=threshold/(image.rows*image.cols);
+
+for(int i=0; i<returnimage.rows; i++){
+  	for(int j=0; j<returnimage.cols; j++){
+	   int currentPix=(int)returnimage.at<uchar>(i,j);
+	   if(currentPix<=threshold){
+		returnimage.at<uchar>(i,j)=255;		
+
+	   }//bg
+	   else{									   			returnimage.at<uchar>(i,j)=0;		
+	   }//foreg
+
+	}
+} 
+
+   return returnimage;
+}
+
+Mat colorImage(){
+
+
+
+
+
+
+}
+
 
 
 int main( int argc, char** argv ){
@@ -107,7 +154,7 @@ int main( int argc, char** argv ){
      	return -1;
     }
 
-    Mat image,grayscale,newimage;
+    Mat image,histogramorg,newimage,histogramnew,negimage,histogramneg;
     image = imread(argv[1], IMREAD_GRAYSCALE);   // Read the file
 
     if(!image.data ){                              // Check for invalid input
@@ -115,13 +162,22 @@ int main( int argc, char** argv ){
         return -1;
     }
 
+    histogramorg=graphHist(image);
+    imshow( "original", image);                   // Show original image.
+    imshow( "original histogram", histogramorg);           // Show original histogram.
 
-    imshow( "Display window", image);                   // Show our image inside it.
-     
     newimage=equalizeHist(image);
-    imshow( "Display window1", newimage);               // Show our image inside it.
+    histogramnew=graphHist(newimage);
+    imshow( "enhanced window2", newimage);               // Show enhanced image.
+    imshow( "enhanced histogram2", histogramnew);          // Show enhanced histogram.
 
+    negimage=neg(newimage);
+    histogramneg=graphHist(negimage);
+    imshow( "negative window3", negimage);               // Show negative image.
+    imshow( "negative histogram3", histogramneg);          // Show negative histogram.
+    
 
+    
     waitKey(0);                                          // Wait for a keystroke in the window
     return 0;
 }
