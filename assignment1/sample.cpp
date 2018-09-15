@@ -305,14 +305,14 @@ Mat rankImage(const Mat& image){
 
 int main( int argc, char** argv ){
 
-    Mat nycimg,houseimg,shapesimg,guideimg,histogramorg,newimage,histogramnew,negimage,histogramneg;
+    Mat nycimg,houseimg,shapesimg,guideimg;
     //char exit;
     nycimg = imread("NYC.bmp", IMREAD_GRAYSCALE);   // Read the file
     houseimg = imread("house.bmp", IMREAD_GRAYSCALE);   // Read the file
     shapesimg = imread("shapes.bmp", IMREAD_GRAYSCALE);   // Read the file
     guideimg = imread("guide.bmp", IMREAD_GRAYSCALE);   // Read the file
    
-    //house
+    ///////////////////////////////////house////////////////////////////////////////////////
 
     imshow( "original house", houseimg);               // Show enhanced image.
     imshow( "histogram of original house", graphHist(houseimg));          // Show enhanced histogram.
@@ -320,25 +320,24 @@ int main( int argc, char** argv ){
     imshow( "enhanced house", equalizeHist(houseimg));               // Show enhanced image.
     imshow( "enhanced histogram house", graphHist(equalizeHist(houseimg)));          // Show enhanced histogram.
 
-    imshow( "negati ve house", neg(equalizeHist(houseimg)));               // Show enhanced image.
+    imshow( "negative house", neg(equalizeHist(houseimg)));               // Show enhanced image.
     imshow( "negative histogram house", graphHist(neg(equalizeHist(houseimg))));          // Show enhanced histogram.
-
-	
-    //newimage=equalizeHist(image);
-    //histogramnew=graphHist(newimage);
-    //imshow( "enhanced window2", newimage);               // Show enhanced image.
-    //imshow( "enhanced histogram2", histogramnew);          // Show enhanced histogram.
-
-    //negimage=neg(newimage);
-    //histogramneg=graphHist(negimage);
-    //imshow( "negative window3", negimage);               // Show negative image.
-    //imshow( "negative histogram3", histogramneg);          // Show negative histogram.
-    //Mat thresimg=thres(image);
-    //Mat newimage1=colorImage(37, 36,120, thresimg);
-    //histogramneg=graphHist(negimage);
-    //imshow( "negative window3", thresimg);               // Show negative image.
-    //imshow( "negative histogram3", histogramneg);          // Show negative histogram.
     
+    //////////////////////////////////////nyc////////////////////////////////////////////////
+
+    imshow( "original nyc", nycimg);               // Show enhanced image.
+    imshow( "histogram of original nyc", graphHist(nycimg));          // Show enhanced histogram.
+
+    imshow( "enhanced nyc", equalizeHist(nycimg));               // Show enhanced image.
+    imshow( "enhanced histogram nyc", graphHist(equalizeHist(nycimg)));          // Show enhanced histogram.
+
+    imshow( "negative nyc", neg(equalizeHist(nycimg)));               // Show enhanced image.
+    imshow( "negative histogram nyc", graphHist(neg(equalizeHist(nycimg))));          // Show enhanced histogram.
+    //////////////////////////////////////shapes////////////////////////////////////////////////	
+    imshow( "ranked shape", rankImage(thres(shapesimg)));               // Show enhanced image.
+ 
+    imshow( "ranked guide", rankImage(thres(guideimg)));               // Show enhanced image.
+
     waitKey(0);                                          // Wait for a keystroke in the window
     return 0;
 }
