@@ -314,25 +314,25 @@ int main( int argc, char** argv ){
    
     ///////////////////////////////////house////////////////////////////////////////////////
 
-    imshow( "original house", houseimg);               // Show enhanced image.
-    imshow( "histogram of original house", graphHist(houseimg));          // Show enhanced histogram.
+    //imshow( "original house", houseimg);               // Show enhanced image.
+    //imshow( "histogram of original house", graphHist(houseimg));          // Show enhanced histogram.
 
-    imshow( "enhanced house", equalizeHist(houseimg));               // Show enhanced image.
-    imshow( "enhanced histogram house", graphHist(equalizeHist(houseimg)));          // Show enhanced histogram.
+    //imshow( "enhanced house", equalizeHist(houseimg));               // Show enhanced image.
+    //imshow( "enhanced histogram house", graphHist(equalizeHist(houseimg)));          // Show enhanced histogram.
 
-    imshow( "negative house", neg(equalizeHist(houseimg)));               // Show enhanced image.
-    imshow( "negative histogram house", graphHist(neg(equalizeHist(houseimg))));          // Show enhanced histogram.
+    //imshow( "negative house", neg(equalizeHist(houseimg)));               // Show enhanced image.
+   // imshow( "negative histogram house", graphHist(neg(equalizeHist(houseimg))));          // Show enhanced histogram.
     
     //////////////////////////////////////nyc////////////////////////////////////////////////
 
-    imshow( "original nyc", nycimg);               // Show enhanced image.
-    imshow( "histogram of original nyc", graphHist(nycimg));          // Show enhanced histogram.
+    //imshow( "original nyc", nycimg);               // Show enhanced image.
+    //imshow( "histogram of original nyc", graphHist(nycimg));          // Show enhanced histogram.
 
-    imshow( "enhanced nyc", equalizeHist(nycimg));               // Show enhanced image.
-    imshow( "enhanced histogram nyc", graphHist(equalizeHist(nycimg)));          // Show enhanced histogram.
+    //imshow( "enhanced nyc", equalizeHist(nycimg));               // Show enhanced image.
+    //imshow( "enhanced histogram nyc", graphHist(equalizeHist(nycimg)));          // Show enhanced histogram.
 
-    imshow( "negative nyc", neg(equalizeHist(nycimg)));               // Show enhanced image.
-    imshow( "negative histogram nyc", graphHist(neg(equalizeHist(nycimg))));          // Show enhanced histogram.
+    //imshow( "negative nyc", neg(equalizeHist(nycimg)));               // Show enhanced image.
+   // imshow( "negative histogram nyc", graphHist(neg(equalizeHist(nycimg))));          // Show enhanced histogram.
     //////////////////////////////////////shapes////////////////////////////////////////////////	
     imshow( "ranked shape", rankImage(thres(shapesimg)));               // Show enhanced image.
  

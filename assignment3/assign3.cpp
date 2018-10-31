@@ -8,8 +8,10 @@
 #include <math.h>
 #include <stack>
 #include <cmath>
+#include "sobel.cpp"
 
-#define pi 3.142857 
+#define pi 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679
+#define smallerpi 3.1415926
 using namespace cv;
 using namespace std;
 
@@ -28,6 +30,25 @@ vector<int> calculateHist(const Mat& image){
   return histogram;
 }
 
+double alpha2(int a){
+
+	if(a==0){
+		return 1.0/sqrt(2.0);
+	
+	}
+	return 1.0;
+
+}
+double alpha(int i, int n){
+	if(i!=0){
+		return (sqrt(2.0)/(double)n);
+	
+	
+	}
+	return (sqrt(1.0)/(double)n);
+
+
+}
 
 float intensityValue(int red, int green, int blue){
 	return (red+green+blue)/3;
@@ -102,6 +123,24 @@ Mat intensityImage(const Mat& image){
 	return returnImage;
 }
 
+Mat hueImage(const Mat& image){
+	Mat returnImage=image.clone();
+	for(int i =0;i<image.rows;++i){
+        	for(int j=0;j<image.cols;++j){
+			int inten;
+			inten=image.at<Vec3b>(i,j)[0];
+			returnImage.at<Vec3b>(i,j)[0]=inten;
+			returnImage.at<Vec3b>(i,j)[1]=inten;
+			returnImage.at<Vec3b>(i,j)[2]=inten;
+		
+		}
+	}
+
+
+	return returnImage;
+}
+
+
 float calcFV(vector<int> currentHist,int thres,float mean){
 	float returnVal;	
 	for (int i=0;i<256;++i){
@@ -122,150 +161,253 @@ float calcBV(vector<int> currentHist,int thres,float mean){
 	return returnVal;
 }
 
-int ostuMethod(const Mat& image){
-	int returnVal=140;
-	vector<float> classVar (256,1000.0);
-	vector<int> currentHist=calculateHist(image);
-	int totalnum=image.cols*image.rows;
-	for (int i=0;i<256;++i){
-		float forgW=0;
-		float backgW=0;
-		float forgM=0;
-		float backgM=0;
-		int backP=0;
-		int forP=0;
-		for (int j=0;j<256;++j){
-			if(j<i){
-				backgW+=currentHist[j];
-				backgM+=(j*currentHist[j]);
-				
-			}//back
-			else{
-				forgW+=currentHist[j];
-				forgM+=(j*currentHist[j]);				
-			}//fore
-			
-		}
-		backP=backgW;
-		forP=forgW;	
-		forgW/=totalnum;
-		backgW/=totalnum;
-		forgM/=forP;
-		backgM/=backP;
-		int forgV=calcFV(currentHist,i,forgM)/forP;
-		int backgV=calcBV(currentHist,i,backgM)/backP;
-		//calculate
-		classVar[i]=((forgW)*(forgV))+((backgW)*(backgV));
-	}//for every index
-	for(int i=0;i<256;++i){
-		if(classVar[i]<classVar[returnVal]){
-			returnVal=i;
+vector<float> dctVect(int pt, vector<int> img){
+	vector<double> intensity;
+	intensity.resize(pt);
+	
+	vector<float> returnVal;
+	returnVal.resize(pt*pt);
+
+	vector<vector<double>> cosine;
+	vector<double> row;
+	row.resize(pt);
+	
+	for(int i=0; i<pt; ++i){
+		cosine.push_back(row);
+		intensity[i]=img[i];	
+
+	}
+
+	double I2N= 1.0/(double)pt*2.0;
+
+	for(int i=0;i<pt;++i){
+		for(int j=0;j<pt;++j){
+			cosine[i][j]=cos(smallerpi*i*(2.0*j+1)*I2N);
 		}
 	}
-	cout<<returnVal<<'\n';
-	return returnVal;
-}
 
 
-Mat intensityThreshold(const Mat& image){
-	int huethres=ostuMethod(image);
-	Mat returnImage=image.clone();
+	for(int i=0;i<pt;++i){
+		for(int j=0;j<pt;++j){
+			for(int k=0;k<pt;++k){
+				returnVal[j*pt+k]=0;
+				for(int l=0;l<pt;++l){
+					for(int m=0;m<pt;++m){
+						float currentOut=cosine[j][l]*cosine[k][m];
+						returnVal[j*pt+k]+=(currentOut*intensity[m]);
+					
+					}
+				
+				}
 
-	for(int i =0;i<image.rows;++i){
-        	for(int j=0;j<image.cols;++j){
-			if(((int)image.at<Vec3b>(i,j)[2])>huethres){
-				returnImage.at<Vec3b>(i,j)[0]=255;
-				returnImage.at<Vec3b>(i,j)[1]=255;
-				returnImage.at<Vec3b>(i,j)[2]=255;
-
+				returnVal[j*pt+k]*=alpha(j,pt)*alpha(k,pt);	
 			}
-			else{
-
-				returnImage.at<Vec3b>(i,j)[0]=0;
-				returnImage.at<Vec3b>(i,j)[1]=0;
-				returnImage.at<Vec3b>(i,j)[2]=0;
-			}
-			
 		
 		}
+	
 	}
 
-	return returnImage;
+	return returnVal;
 
 }
 
 
-Mat dctTransform(int matrix[][8]){ 
-  
-    // dct will store the discrete cosine transform 
-    float dct[8][8]; 
-    float ci, cj, dct1, sum; 
-    for (int i = 0; i < 8; ++i) { 
-        for (int j = 0; j < 8; ++j) { 
-  
-            // ci and cj depends on frequency as well as 
-            // number of row and columns of specified matrix 
-            if (i == 0) 
-                ci = 1 / sqrt(8); 
-            else
-                ci = sqrt(2) / sqrt(8); 
-            if (j == 0) 
-                cj = 1 / sqrt(8); 
-            else
-                cj = sqrt(2) / sqrt(8); 
-  
-            // sum will temporarily store the sum of  
-            // cosine signals 
-            sum = 0; 
-            for (int k = 0; k < 8; ++k) { 
-                for (int l = 0; l < 8; ++l) { 
-                    dct1 = matrix[k][l] * cos((2 * k + 1) * i * pi / (2 * 8))*cos((2 * l + 1) * j * pi / (2 * 8)); 
-                    sum += dct1; 
-                } 
-            } 
-            dct[i][j] = ci * cj * sum; 
-        } 
-    } 
-
-    Mat test(8,8,CV_64F);
-    memcpy(test.data,dct,8*8*sizeof(int));
-    imwrite("test2.jpeg",test);
-    return test;
-} 
-
-int main() 
-{ 
-    int matrix[8][8] = { { 255, 255, 255, 255, 255, 255, 255, 255 }, 
-                         { 255, 255, 255, 255, 255, 255, 255, 255 }, 
-                         { 255, 255, 255, 255, 255, 255, 255, 255 }, 
-                         { 255, 255, 255, 255, 255, 255, 255, 255 }, 
-                         { 255, 255, 255, 255, 255, 255, 255, 255 }, 
-                         { 255, 255, 255, 255, 255, 255, 255, 255 }, 
-                         { 255, 255, 255, 255, 255, 255, 255, 255 }, 
-                         { 255, 255, 255, 255, 255, 255, 255, 255 } }; 
-    Mat test(8,8,CV_64F);
-    memcpy(test.data,matrix,8*8*sizeof(int));
-    imwrite("test.bmp",test);
-    imshow("help",test);
-    dctTransform(matrix); 
-    return 0; 
-} 
+Mat DCTImage_DC(Mat intensityImage){
+	int height=intensityImage.rows;
+	int width=intensityImage.cols;
+	height-=(intensityImage.rows%8);
+	width-=(intensityImage.cols%8);
 
 
+	Mat retVal = intensityImage.clone();
+	
+	for(int x = 0; x < height; x+= 8){
+		for(int y = 0; y < width; y+= 8){
+			//for each block
+			for(int i = x; i < x+8; i++){
+				for(int j = y; j < y+8; j++){
+					//for every pixel
+					if(i != x || j != y){
+						retVal.at<Vec3b>(i,j)[0] = 0;
+						retVal.at<Vec3b>(i,j)[1] = 0;
+						retVal.at<Vec3b>(i,j)[2] = 0;					
+					}
+				}
+			}
+		}
+	}
+	
+	return retVal;
+}//only keep one pixel
 
-/*int main( int argc, char** argv ){
+Mat DCTImage_9(Mat intensityImage){
+	int height=intensityImage.rows;
+	int width=intensityImage.cols;
+	height-=(intensityImage.rows%8);
+	width-=(intensityImage.cols%8);
 
-    Mat basel,gray;
+
+	Mat retVal = intensityImage.clone();
+	
+	for(int x = 0; x < height; x+= 8){
+		for(int y = 0; y < width; y+= 8){
+			//for block 8 pixels
+			for(int i = x; i < x+8; i++){
+				for(int j = y; j < y+8; j++){
+					//for every pixel
+					for(int p = x; p < x+8; p++){
+						for(int q = y; q < y+8; q++){
+							//for every pixel
+							if(!(i == x && j == y)&&!(i == x+2 && j == y+1)&&!(i == x+2 && j == y)&&!(i == x+1 && j == y+2)&&!(i == x+1 && j == y+1)&&!(i == x+1 && j == y)&&!(i == x && j == y+3)&&!(i == x && j == y+2)&&!(i == x && j == y +1)){
+								retVal.at<Vec3b>(i,j)[0] = 0;								
+								retVal.at<Vec3b>(i,j)[1] = 0;
+								retVal.at<Vec3b>(i,j)[2] = 0;
+					
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	return retVal;
+}//keep 9 pixels
+
+
+Mat DCTImage(const Mat& intensityImage, bool DC, bool l9){
+        Mat retVal=intensityImage.clone();	
+	retVal.setTo(Scalar(0,0,0));
+
+	int height=intensityImage.rows;
+	int width=intensityImage.cols;
+	height-=(intensityImage.rows%8);
+	width-=(intensityImage.cols%8);
+
+	for(int bigblockx = 0; bigblockx < height; bigblockx+= 8){
+		for(int bigblocky = 0; bigblocky < width; bigblocky+= 8){
+			//8 pixel block	
+			for(int smalli = bigblockx; smalli < bigblockx+8; ++smalli){
+				for(int smallj = bigblocky; smallj < bigblocky+8; ++smallj){
+					float currentVal = 0.0;
+					
+					for(int pixelp = bigblockx; pixelp < bigblockx+8; ++pixelp){
+						for(int pixelq = bigblocky; pixelq < bigblocky+8; ++pixelq){
+							float p2=2*pixelp+1;
+							float q2=2*pixelq+1;
+							float pii=smalli*pi;
+							float pij=smallj*pi;
+							currentVal+=(intensityImage.at<Vec3b>(pixelp,pixelq)[2])*cos(p2*pii/16)*(cos(q2*pij/16));	
+						}
+					}
+					currentVal *= (0.25) * (alpha2(smalli) * alpha2(smallj));
+					retVal.at<Vec3b>(smalli, smallj)[0] = ceil(currentVal);
+					retVal.at<Vec3b>(smalli, smallj)[1] = ceil(currentVal);
+					retVal.at<Vec3b>(smalli, smallj)[2] = ceil(currentVal);
+				}
+			}
+		}
+	}
+
+
+	if(DC){
+	     retVal=DCTImage_DC(retVal);
+
+	}
+	else if(l9){
+	     retVal=DCTImage_9(retVal);
+
+	}
+	
+    return retVal;
+}
+
+
+Mat IDCTImage(const Mat& intensityImage){
+	Mat retVal=intensityImage.clone();	
+	retVal.setTo(Scalar(0,0,0));
+
+	int height=intensityImage.rows;
+	int width=intensityImage.cols;
+	height-=(intensityImage.rows%8);
+	width-=(intensityImage.cols%8);
+
+	
+	for(int blockx = 0; blockx < height; blockx+= 8){
+		for(int blocky = 0; blocky < width; blocky+= 8){
+			//for each block
+			for(int i = blockx; i < blockx+8; i++){
+				for(int j = blocky; j < blocky+8; j++){
+					float currentVal = 0.0;
+
+					for(int p = blockx; p < blockx+8; p++){
+						for(int q = blocky; q < blocky+8; q++){
+							float i2=2*i+1;
+							float j2=2*j+1;
+							float pip=p*pi;
+							float piq=q*pi;
+
+							currentVal += (intensityImage.at<Vec3b>(p,q)[2])*(cos(((i2)) * pip / 16))*(cos(j2 * piq / 16))*(alpha2(i)*alpha2(j));
+						}
+					}
+					currentVal *= (0.25);
+					retVal.at<Vec3b>(i, j)[0] = ceil(currentVal);
+					retVal.at<Vec3b>(i, j)[1] = ceil(currentVal);
+					retVal.at<Vec3b>(i, j)[2] = ceil(currentVal);
+				}
+			}
+		}
+	}
+	return retVal;
+
+}
+
+int main( int argc, char** argv ){
+
+    Mat basel,intensity,HSI,build,plate;
+    vector<int> row18={10,11,12,11,12,13,12,11};
+    vector<int> row28={10,-10,8,-7,8,-8,7,-7};
+    vector<int> row116={10,11,12,11,12,13,12,11,10,-10,8,-7,8,-8,7,-7};
+    vector<float> row1=dctVect(8,row18);
+    vector<float> row2=dctVect(8,row28);
+    vector<float> row3=dctVect(16,row116);
+    cout<<"/////////////////////////////////two rows//////////////////////////////////////////////\n";
+    for(int i=0;i<8;++i){
+	printf("%.5f, ",row1[i]);
+	
+    }
+    for(int i=0;i<8;++i){
+    	printf("%.5f, ",row2[i]);
+
+    }
+		cout<<"\n"<<"\n";
+ cout<<"/////////////////////////////////one row//////////////////////////////////////////////\n";
+    for(int i=0;i<16;++i){
+	printf("%.5f, ",row3[i]);
+    }
+
     //char exit;
-    //ant = imread("ant_gray.bmp", IMREAD_COLOR);   
-    //basel = imread("test.jpg",IMREAD_COLOR);
-    basel = imread("Building1.bmp",IMREAD_COLOR);
-   //imshow("basel",basel);//blur take difference then add on top of the original picture
-   //imshow("ant",ant);//blur take difference then add on top of the original picture
-  //imshow("basel 2",rbgToHsi(basel));
-  gray=rbgToHsi(basel);
-  imshow("basel 3",gray);
-  imshow("basel 4",intensityThreshold(gray));
-   waitKey(0);                                          
+    build = imread("Building1.bmp", IMREAD_COLOR);   
+    plate = imread("Disk.bmp",IMREAD_COLOR);
+    basel = imread("basel3.bmp",IMREAD_COLOR);
+    plate=hueImage(rbgToHsi(plate));
+   
+    HSI=rbgToHsi(basel);
+    intensity=intensityImage(HSI);
+    Mat dctBaselL9=DCTImage(intensity,false,true);
+    Mat dctBaselDC=DCTImage(intensity,true,false);
+    Mat dctBasel=DCTImage(intensity,false,false);
+    
+    imshow("ROI BUILD",Sobel(build));
+    imshow("ROI PLATE",Sobel(plate));
+    imshow("HSI",HSI);
+    imshow("intensity",intensity);
+    imshow("DCT L9",dctBaselL9);
+    imshow("DCT DC",dctBaselDC);
+    imshow("DCT",dctBasel);
+    imshow("IDCT",IDCTImage(dctBasel));
+    imshow("IDCT L9",IDCTImage(dctBaselL9));
+    imshow("IDCT DC",IDCTImage(dctBaselDC));
+    waitKey(0);                                          
     return 0;
-}*/
+}

@@ -230,12 +230,12 @@ int main( int argc, char** argv ){
  //  imshow("Usharp ant",Usharp(ant));//blur take difference then add on top of the original picture
    // imshow("Sobel basel",Sobel(Blur(basel)));//blur take difference then add on top of the original picture
     imshow("Sobel ant",Sobel(Blur(ant)));//blur take difference then add on top of the original picture
-   // vector<vector<double>> mask7 = createLoGMask(1.4,7,3,1,1);
-    //vector<vector<double>> mask11 = createLoGMask(5.0,11,5,2,100);
+    vector<vector<double>> mask7 = createLoGMask(1.4,7,3,1,1);
+    vector<vector<double>> mask11 = createLoGMask(5.0,11,5,2,100);
     //imshow("LoG7 basel",Sig7(basel,mask7));//blur take difference then add on top of the original
    // imshow("LoG11 basel",Sig11(basel,mask11));//blur take difference then add on top of the original
-    //imshow("LoG7 ant",Sig7(ant,mask7));//blur take difference then add on top of the original
-   // imshow("LoG11 ant",Sig11(ant,mask11));//blur take difference then add on top of the original
+    imshow("LoG7 ant",Sig7(ant,mask7));//blur take difference then add on top of the original
+    imshow("LoG11 ant",Sig11(ant,mask11));//blur take difference then add on top of the original
     waitKey(0);                                          
     return 0;
 }
