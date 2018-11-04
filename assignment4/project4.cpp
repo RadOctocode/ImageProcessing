@@ -50,25 +50,17 @@ Mat thres(const Mat& image){
 bool HitMiss(const Mat& image, int x, int y){
 	bool boolAnd=true;
 	bool boolOr=false;
-	/*if(((x-1)>0)&&((y-1)>0)){
-	    boolAnd=boolAnd&&(mask[0][0]*image.at<uchar>(x-1,y-1));
-	    boolOr=boolOr||(mask[0][0]*image.at<uchar>(x-1,y-1));
-
-	}*/
+	
 	if((y-1)>0){
 	    boolAnd=boolAnd&&(mask[0][1]*image.at<uchar>(x,y-1));
 	    boolOr=boolOr||(mask[0][1]*image.at<uchar>(x,y-1));
-
 	}
-	/*if(((x+1)<image.cols)&&((y-1)>0)){	
-	    boolAnd=boolAnd&&(mask[0][2]*image.at<uchar>(x+1,y-1));
-	    boolOr=boolOr||(mask[0][2]*image.at<uchar>(x+1,y-1));
 	
-	}*/
 	if((x-1)>0){			
 	   boolAnd=boolAnd&&(mask[1][0]*image.at<uchar>(x-1,y));
 	   boolOr=boolOr||(mask[1][0]*image.at<uchar>(x-1,y));
 	}
+	
 	boolAnd=boolAnd&&(mask[1][1]*image.at<uchar>(x,y));
 	boolOr=boolOr||(mask[1][1]*image.at<uchar>(x,y));			
 	
@@ -76,18 +68,12 @@ bool HitMiss(const Mat& image, int x, int y){
 	    boolAnd=boolAnd&&(mask[1][2]*image.at<uchar>(x+1,y));
 	    boolOr=boolOr||(mask[1][2]*image.at<uchar>(x+1,y));
 	}
-	/*if(((x-1)>0)&&((y+1)<image.rows)){			
-	    boolAnd=boolAnd&&(mask[2][0]*image.at<uchar>(x-1,y+1));
-	    boolOr=boolOr||(mask[2][0]*image.at<uchar>(x-1,y+1));
-	}*/
+	
 	if((y+1)<image.rows){			
 	   boolAnd=boolAnd&&(mask[1][2]*image.at<uchar>(x,y+1));
 	   boolOr=boolOr||(mask[1][2]*image.at<uchar>(x,y+1));
 	}
-	/*if(((x+1)<image.cols)&&((y+1)<image.rows)){			
-	   boolAnd=boolAnd&&(mask[2][2]*image.at<uchar>(x+1,y+1));
-	   boolOr=boolOr||(mask[2][2]*image.at<uchar>(x+1,y+1));
-	}*/
+	
 
 	if(boolOr&&(!boolAnd)){
 		return true;
