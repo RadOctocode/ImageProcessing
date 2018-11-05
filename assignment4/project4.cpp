@@ -140,64 +140,119 @@ Mat erosionGray(const Mat& image){
    Mat returnVal=image.clone();
    for(int x=0;x<image.rows;++x){
 	for(int y=0;y<image.cols;++y){
-	int min=255;
-        if(((x-1)>0)&&((y-1)>0)&&(image.at<uchar>(x-1,y-1)<min)){
+		int min=255;
+	        if(((x-1)>0)&&((y-1)>0)&&(image.at<uchar>(x-1,y-1)<min)){
 	   
-	    min=image.at<uchar>(x-1,y-1);
-	}
-	if(((y-1)>0)&&(image.at<uchar>(x,y-1)<min)){
+		    min=image.at<uchar>(x-1,y-1);
+		}
+		if(((y-1)>0)&&(image.at<uchar>(x,y-1)<min)){
 
-	  min=image.at<uchar>(x,y-1);
+		  min=image.at<uchar>(x,y-1);
 
-	}
-	if(((x+1)<image.rows)&&((y-1)>0)&&(image.at<uchar>(x+1,y-1)<min)){	
+		}
+		if(((x+1)<image.rows)&&((y-1)>0)&&(image.at<uchar>(x+1,y-1)<min)){	
 
-	   min=image.at<uchar>(x+1,y-1);
+		   min=image.at<uchar>(x+1,y-1);
 	
-	}
-	if(((x-1)>0)&&(image.at<uchar>(x-1,y)<min)){			
+		}
+		if(((x-1)>0)&&(image.at<uchar>(x-1,y)<min)){			
+	
+		   min=image.at<uchar>(x-1,y);
+		}
+		if(min<image.at<uchar>(x,y)){
+		   min=image.at<uchar>(x,y);			
+		}
+		if(((x+1)>image.rows)&&(min>image.at<uchar>(x+1,y))){			
 
-	   min=image.at<uchar>(x-1,y);
-	}
-	if(min<image.at<uchar>(x,y)){
-	   min=image.at<uchar>(x,y);			
-	}
-	if(((x+1)>image.rows)&&(min>image.at<uchar>(x+1,y))){			
+		   min=image.at<uchar>(x+1,y);
+		}
+		if(((x-1)>0)&&((y+1)<image.cols)&&(min>image.at<uchar>(x-1,y+1))){			
 
-	   min=image.at<uchar>(x+1,y);
-	}
-	if(((x-1)>0)&&((y+1)<image.cols)&&(min>image.at<uchar>(x-1,y+1))){			
+		   min=image.at<uchar>(x-1,y+1);
+		}
+		if(((y+1)<image.cols)&&(min>image.at<uchar>(x,y+1))){			
+	
+		 min=image.at<uchar>(x,y+1);
+		}
+		if(((x+1)<image.rows)&&((y+1)<image.cols)&&(min>image.at<uchar>(x+1,y+1))){			
 
-	   min=image.at<uchar>(x-1,y+1);
-	}
-	if(((y+1)<image.cols)&&(min>image.at<uchar>(x,y+1))){			
-
-	 min=image.at<uchar>(x,y+1);
-	}
-	if(((x+1)<image.rows)&&((y+1)<image.cols)&&(min>image.at<uchar>(x+1,y+1))){			
-
-	   min=image.at<uchar>(x+1,y+1);
-	}
-	returnVal.at<uchar>(x,y)=min;
+	   		min=image.at<uchar>(x+1,y+1);
+		}
+		returnVal.at<uchar>(x,y)=min;
 	}
    }
    return returnVal;
 
 }
 
-/*Mat dilationGray(const Mat& image){
+Mat dilationGray(const Mat& image){
    Mat returnVal=image.clone();
-   for(int i=0;i<image.rows;++i){
-	for(int j=0;j<image.cols;++j){
-        
+   for(int x=0;x<image.rows;++x){
+	for(int y=0;y<image.cols;++y){
+        	int max=0;
+	        if(((x-1)>0)&&((y-1)>0)&&(image.at<uchar>(x-1,y-1)>max)){
+	   
+		    max=image.at<uchar>(x-1,y-1);
+		}
+		if(((y-1)>0)&&(image.at<uchar>(x,y-1)>max)){
+
+		  max=image.at<uchar>(x,y-1);
+
+		}
+		if(((x+1)<image.rows)&&((y-1)>0)&&(image.at<uchar>(x+1,y-1)>max)){	
+
+		   max=image.at<uchar>(x+1,y-1);
+	
+		}
+		if(((x-1)>0)&&(image.at<uchar>(x-1,y)>max)){			
+	
+		   max=image.at<uchar>(x-1,y);
+		}
+		if(max>image.at<uchar>(x,y)){
+		   max=image.at<uchar>(x,y);			
+		}
+		if(((x+1)>image.rows)&&(max<image.at<uchar>(x+1,y))){			
+
+		   max=image.at<uchar>(x+1,y);
+		}
+		if(((x-1)>0)&&((y+1)<image.cols)&&(max<image.at<uchar>(x-1,y+1))){			
+
+		      max=image.at<uchar>(x-1,y+1);
+		}
+		if(((y+1)<image.cols)&&(max<image.at<uchar>(x,y+1))){			
+	
+		       max=image.at<uchar>(x,y+1);
+		}
+		if(((x+1)<image.rows)&&((y+1)<image.cols)&&(max<image.at<uchar>(x+1,y+1))){			
+
+	   		max=image.at<uchar>(x+1,y+1);
+		}
+		returnVal.at<uchar>(x,y)=max;
+
 	
 	}
    }
    return returnVal;
 
-}*/
+}
 
 
+Mat closingOpG(const Mat& image){
+	Mat dImage,eImage;
+	dImage=dilationGray(image);
+	eImage=erosionGray(dImage);
+
+	return eImage;
+
+}//dilation then erosion
+
+Mat openingOpG(const Mat& image){
+	Mat dImage,eImage;
+	eImage=erosionGray(image);
+	dImage=dilationGray(eImage);
+
+	return dImage;
+}//erosion then dilation
 
 
 
@@ -219,11 +274,14 @@ int main( int argc, char** argv ){
     odd = imread("TestImage-odd-width.bmp", IMREAD_GRAYSCALE);   // Read the file
     thresEven=thres(even);
     thresOdd=thres(odd);
-    Mat (*openAdr)(const Mat&)=&openingOpT;
-    Mat (*closeAdr)(const Mat&)=&closingOpT;
+    Mat (*openTAdr)(const Mat&)=&openingOpT;
+    Mat (*closeTAdr)(const Mat&)=&closingOpT;
     Mat (*eroTAdr)(const Mat&)=&erosionThres;
     Mat (*dilTAdr)(const Mat&)=&dilationThres;
     Mat (*eroGAdr)(const Mat&)=&erosionGray;
+    Mat (*dilGAdr)(const Mat&)=&dilationGray;
+    Mat (*openGAdr)(const Mat&)=&openingOpG;
+    Mat (*closeGAdr)(const Mat&)=&closingOpG;
 
 
     /*imshow( "original image even", (thres(even))); 
@@ -248,8 +306,10 @@ int main( int argc, char** argv ){
     
     imshow( "closing image even", even);               // Show enhanced image.   
  
-    imshow( "opening image even", (runFunction(even,8,eroGAdr)));               // Show enhanced image.
+    imshow( "dilation image even", (runFunction(even,3,openGAdr)));               // Show enhanced image.
+    imshow( "erosion image even", (runFunction(even,3,closeGAdr)));               // Show enhanced image.
    
+
     waitKey(0);                                          // Wait for a keystroke in the window
     return 0;
 }
