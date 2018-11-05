@@ -86,7 +86,6 @@ bool HitMiss(const Mat& image, int x, int y){
 */
 }
 
-
 Mat erosionThres(const Mat& image){   
    Mat returnVal=image.clone();
    for(int i=0;i<image.rows;++i){
@@ -101,7 +100,7 @@ Mat erosionThres(const Mat& image){
    }
    return returnVal;
 
-}/*finding fits*/
+}
 
 
 Mat dilationThres(const Mat& image){
@@ -118,7 +117,7 @@ Mat dilationThres(const Mat& image){
 }
 
 
-Mat closingOp(const Mat& image){
+Mat closingOpT(const Mat& image){
 	Mat dImage,eImage;
 	dImage=dilationThres(image);
 	eImage=erosionThres(dImage);
@@ -127,13 +126,80 @@ Mat closingOp(const Mat& image){
 
 }//dilation then erosion
 
-Mat openingOp(const Mat& image){
+Mat openingOpT(const Mat& image){
 	Mat dImage,eImage;
 	eImage=erosionThres(image);
 	dImage=dilationThres(eImage);
 
 	return dImage;
 }//erosion then dilation
+
+
+
+Mat erosionGray(const Mat& image){
+   Mat returnVal=image.clone();
+   for(int x=0;x<image.rows;++x){
+	for(int y=0;y<image.cols;++y){
+	int min=255;
+        if(((x-1)>0)&&((y-1)>0)&&(image.at<uchar>(x-1,y-1)<min)){
+	   
+	    min=image.at<uchar>(x-1,y-1);
+	}
+	if(((y-1)>0)&&(image.at<uchar>(x,y-1)<min)){
+
+	  min=image.at<uchar>(x,y-1);
+
+	}
+	if(((x+1)<image.rows)&&((y-1)>0)&&(image.at<uchar>(x+1,y-1)<min)){	
+
+	   min=image.at<uchar>(x+1,y-1);
+	
+	}
+	if(((x-1)>0)&&(image.at<uchar>(x-1,y)<min)){			
+
+	   min=image.at<uchar>(x-1,y);
+	}
+	if(min<image.at<uchar>(x,y)){
+	   min=image.at<uchar>(x,y);			
+	}
+	if(((x+1)>image.rows)&&(min>image.at<uchar>(x+1,y))){			
+
+	   min=image.at<uchar>(x+1,y);
+	}
+	if(((x-1)>0)&&((y+1)<image.cols)&&(min>image.at<uchar>(x-1,y+1))){			
+
+	   min=image.at<uchar>(x-1,y+1);
+	}
+	if(((y+1)<image.cols)&&(min>image.at<uchar>(x,y+1))){			
+
+	 min=image.at<uchar>(x,y+1);
+	}
+	if(((x+1)<image.rows)&&((y+1)<image.cols)&&(min>image.at<uchar>(x+1,y+1))){			
+
+	   min=image.at<uchar>(x+1,y+1);
+	}
+	returnVal.at<uchar>(x,y)=min;
+	}
+   }
+   return returnVal;
+
+}
+
+/*Mat dilationGray(const Mat& image){
+   Mat returnVal=image.clone();
+   for(int i=0;i<image.rows;++i){
+	for(int j=0;j<image.cols;++j){
+        
+	
+	}
+   }
+   return returnVal;
+
+}*/
+
+
+
+
 
 Mat runFunction(const Mat& image,int times, Mat (*a)(const Mat&)){
 	Mat result=image.clone();
@@ -153,10 +219,12 @@ int main( int argc, char** argv ){
     odd = imread("TestImage-odd-width.bmp", IMREAD_GRAYSCALE);   // Read the file
     thresEven=thres(even);
     thresOdd=thres(odd);
-    Mat (*openAdr)(const Mat&)=&openingOp;
-    Mat (*closeAdr)(const Mat&)=&closingOp;
-    Mat (*eroAdr)(const Mat&)=&erosionThres;
-    Mat (*dilAdr)(const Mat&)=&dilationThres;
+    Mat (*openAdr)(const Mat&)=&openingOpT;
+    Mat (*closeAdr)(const Mat&)=&closingOpT;
+    Mat (*eroTAdr)(const Mat&)=&erosionThres;
+    Mat (*dilTAdr)(const Mat&)=&dilationThres;
+    Mat (*eroGAdr)(const Mat&)=&erosionGray;
+
 
     /*imshow( "original image even", (thres(even))); 
     
@@ -178,9 +246,9 @@ int main( int argc, char** argv ){
    */
     imshow( "original image even", thresEven); 
     
-    imshow( "closing image even", runFunction(thresEven,1,closeAdr));               // Show enhanced image.   
+    imshow( "closing image even", even);               // Show enhanced image.   
  
-    imshow( "opening image even", ((openingOp(thres(even)))));               // Show enhanced image.
+    imshow( "opening image even", (runFunction(even,8,eroGAdr)));               // Show enhanced image.
    
     waitKey(0);                                          // Wait for a keystroke in the window
     return 0;
