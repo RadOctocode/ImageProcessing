@@ -302,12 +302,12 @@ int main( int argc, char** argv ){
  
     imshow( "opening image odd", ((openingOp(thres(odd)))));               // Show enhanced image.
    */
-    imshow( "original image even", thresEven); 
+    //imshow( "original image even", thresEven); 
     
     imshow( "closing image even", even);               // Show enhanced image.   
  
-    imshow( "dilation image even", (runFunction(even,3,openGAdr)));               // Show enhanced image.
-    imshow( "erosion image even", (runFunction(even,3,closeGAdr)));               // Show enhanced image.
+    imshow( "open image even", (runFunction(thresOdd,10,eroTAdr)));               // Show enhanced image.
+    imshow( "close image even", (runFunction(thresOdd,10,dilTAdr)));               // Show enhanced image. //gray scale 15 times
    
 
     waitKey(0);                                          // Wait for a keystroke in the window

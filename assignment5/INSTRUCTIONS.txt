@@ -1,0 +1,6 @@
+INSTRUCTIONS FOR RUNNING THE CODE
+1) type run
+2) wait for partA to make
+3) wait for partB to make
+** please be pacient with both of them
+
